@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cybercrime Bot</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        #chat-box { border: 1px solid #ccc; padding: 10px; height: 300px; overflow-y: scroll; margin-bottom: 10px; }
+        #chat-form { display: flex; }
+        #message { flex-grow: 1; padding: 5px; }
+        button { padding: 5px 10px; margin-left: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Cybercrime Bot</h1>
+    <p>Type your message below to report a cybercrime or get help. Supports English, Hindi, and Telugu.</p>
+    <div id="chat-box"></div>
+    <form id="chat-form">
+        <input type="text" id="message" placeholder="Enter your message..." autocomplete="off">
+        <button type="submit">Send</button>
+        <button type="button" id="trends-btn">Show Trends</button>
+    </form>
+
+    <script>
+        const chatBox = document.getElementById('chat-box');
+        const form = document.getElementById('chat-form');
+        const messageInput = document.getElementById('message');
+        const trendsBtn = document.getElementById('trends-btn');
+
+        async function sendMessage(message) {
+            chatBox.innerHTML += `<p><strong>You:</strong> ${message}</p>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message })
+                });
+                const data = await response.json();
+                chatBox.innerHTML += `<p><strong>Bot:</strong> ${data.response}</p>`;
+                chatBox.scrollTop = chatBox.scrollHeight;
+            } catch (error) {
+                chatBox.innerHTML += `<p><strong>Bot:</strong> Error: Could not connect to server.</p>`;
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const message = messageInput.value.trim();
+            if (!message) return;
+            await sendMessage(message);
+            messageInput.value = '';
+        });
+
+        trendsBtn.addEventListener('click', async () => {
+            await sendMessage('trends');
+        });
+    </script>
+</body>
+</html>
