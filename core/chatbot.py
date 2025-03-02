@@ -34,19 +34,22 @@ class Chatbot:
         else:
             log_error(f"Unsupported language requested: {lang}")
 
-    def process_input(self, user_input, user_id="anonymous"):
+    def process_input(self, user_input, user_id="anonymous", report_data=None):
         self.detect_language(user_input)
         
-        # Check for special command "trends"
         if user_input.lower().strip() == "trends":
             log_info(f"User {user_id} requested threat trends")
             return analyze_threats()
 
-        # Normal cybercrime reporting
         crime_type = classify_cybercrime(user_input)
         log_info(f"Classified crime type: {crime_type}")
         
-        insert_report(user_id, self.language, crime_type, user_input)
+        # Use report_data if provided (from Telegram), otherwise just user_input
+        if report_data:
+            insert_report(user_id, self.language, crime_type, report_data)
+        else:
+            insert_report(user_id, self.language, crime_type, {"incident": user_input})
+        
         response = generate_response(crime_type, self.language)
         return response
 
@@ -55,6 +58,5 @@ if __name__ == "__main__":
     test_input = "I received a phishing email"
     response = bot.process_input(test_input)
     print(response)
-    # Test trends
     trends_response = bot.process_input("trends")
     print(trends_response)
